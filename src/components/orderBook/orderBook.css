@@ -1,6 +1,7 @@
 .count {
   min-width: 50px;
   max-width: 50px;
+  text-align: initial;
 }
 .amount {
   min-width: 120px;
