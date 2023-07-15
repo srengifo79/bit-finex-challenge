@@ -17,3 +17,10 @@
   flex: 1;
   text-align: initial;
 }
+.header {
+  display: flex;
+  justify-content: space-between;
+}
+.root {
+  width: fit-content;
+}

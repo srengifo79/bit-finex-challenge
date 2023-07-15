@@ -148,14 +148,17 @@ export function OrderBook() {
   let totalBuy = 0;
   let totalAsk = 0;
   return (
-    <>
-      <div>
-        <button onClick={handleAddPrecision} disabled={precision > 3}>
-          +0
-        </button>
-        <button onClick={handleReducePrecision} disabled={precision < 1}>
-          -0
-        </button>
+    <div className="root">
+      <div className="header">
+        <span>ORDER BOOK BTC/USD</span>
+        <div>
+          <button onClick={handleReducePrecision} disabled={precision < 1}>
+            -0
+          </button>
+          <button onClick={handleAddPrecision} disabled={precision > 3}>
+            +0
+          </button>
+        </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', columnGap: '2px' }}>
@@ -208,6 +211,6 @@ export function OrderBook() {
           {socket ? 'Disconnect' : 'Connect'}
         </button>
       </div>
-    </>
+    </div>
   );
 }
