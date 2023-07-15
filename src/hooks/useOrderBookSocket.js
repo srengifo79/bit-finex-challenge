@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   addPrecision,
@@ -9,9 +9,12 @@ import {
 } from '../redux/actions/orderBook';
 import { orderBookDataSelector, precisionSelector } from '../redux/selectors';
 
+const timeoutDuration = 3000; // Time to reset if offline
+
 function useOrderBookSocket() {
   const [socket, setSocket] = useState(null);
-
+  const connectedRef = useRef(false);
+  const timeoutRef = useRef(null);
   const dispatch = useDispatch();
 
   const orderBookData = useSelector(orderBookDataSelector);
@@ -45,12 +48,17 @@ function useOrderBookSocket() {
     if (socket) {
       socket.onopen = () => {
         console.log('WebSocket connection established.');
-
+        connectedRef.current = true;
         subscribe();
       };
 
       socket.onmessage = (event) => {
-        console.log('Received data:', event.data);
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => {
+          // Close the WebSocket if no data is received after the timeout
+          socket.close();
+        }, timeoutDuration);
+        // console.log('Received data:', event.data);
 
         const data = JSON.parse(event.data);
 
@@ -75,9 +83,15 @@ function useOrderBookSocket() {
 
       socket.onclose = () => {
         console.log('WebSocket connection closed.');
+        clearTimeout(timeoutRef.current);
+
+        if (connectedRef.current)
+          setTimeout(function () {
+            initConnection();
+          }, 1000);
       };
     }
-  }, [dispatch, orderBookData, precision, socket, subscribe]);
+  }, [connectedRef, dispatch, orderBookData, precision, socket, subscribe]);
 
   useEffect(() => {
     return () => {
@@ -96,6 +110,7 @@ function useOrderBookSocket() {
   const closeConnection = () => {
     if (socket) {
       socket.close();
+      connectedRef.current = false;
       setSocket(null);
     }
   };
