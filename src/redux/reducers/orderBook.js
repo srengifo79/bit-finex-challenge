@@ -1,6 +1,6 @@
 const initialState = {
   orderBookData: null,
-  precision: 0,
+  precision: 4,
 };
 
 function updateOrderBookData(orderBookData, updateFields) {

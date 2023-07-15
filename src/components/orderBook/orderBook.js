@@ -144,10 +144,12 @@ export function OrderBook() {
   const orderBookDataBuy = orderBookData?.[1].slice(0, 25) ?? [];
   const orderBookDataSell = orderBookData?.[1].slice(25) ?? [];
 
+  let totalBuy = 0;
+  let totalAsk = 0;
   return (
     <>
       <div>
-        <button onClick={handleAddPrecision} disabled={precision > 4}>
+        <button onClick={handleAddPrecision} disabled={precision > 3}>
           +0
         </button>
         <button onClick={handleReducePrecision} disabled={precision < 1}>
@@ -160,15 +162,18 @@ export function OrderBook() {
             <div style={{ display: 'flex', columnGap: '50px' }}>
               <span>Count</span>
               <span>Amount</span>
+              <span>Total</span>
               <span>Price</span>
             </div>
-            {orderBookDataBuy.map((row) => {
+            {orderBookDataBuy.map((row, index) => {
               const [price, count, amount] = row;
+              totalBuy = totalBuy + amount;
 
               return (
                 <div key={price} style={{ display: 'flex', columnGap: '50px' }}>
                   <span>{count}</span>
                   <span>{amount}</span>
+                  <span>{totalBuy}</span>
                   <span>{price}</span>
                 </div>
               );
@@ -177,16 +182,21 @@ export function OrderBook() {
           <div>
             <div style={{ display: 'flex', columnGap: '50px' }}>
               <span>Price</span>
+              <span>Total</span>
               <span>Amount</span>
               <span>Count</span>
             </div>
             {orderBookDataSell.map((row) => {
               const [price, count, amount] = row;
+              const absAmount = Math.abs(amount);
+
+              totalAsk = totalAsk + absAmount;
 
               return (
                 <div key={price} style={{ display: 'flex', columnGap: '50px' }}>
                   <span>{price}</span>
-                  <span>{amount}</span>
+                  <span>{totalAsk}</span>
+                  <span>{absAmount}</span>
                   <span>{count}</span>
                 </div>
               );
