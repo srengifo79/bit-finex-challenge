@@ -34,13 +34,19 @@ function useOrderBookSocket() {
 
         const data = JSON.parse(event.data);
 
-        if (!Array.isArray(data) || !Array.isArray(data[1])) {
-          dispatch(resetOrderBookData());
-        } else if (!orderBookData) {
-          dispatch(receiveOrderBookData(data));
-        } else {
-          dispatch(updateOrderBookData(data));
+        if (!Array.isArray(data)) {
+          return dispatch(resetOrderBookData());
         }
+
+        if (!Array.isArray(data[1])) {
+          return;
+        }
+
+        if (!orderBookData) {
+          return dispatch(receiveOrderBookData(data));
+        }
+
+        dispatch(updateOrderBookData(data));
       };
 
       socket.onclose = () => {
