@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   receiveOrderBookData,
+  resetOrderBookData,
   updateOrderBookData,
 } from '../../redux/actions/orderBook';
 
@@ -33,11 +34,11 @@ function useOrderBookSocket() {
 
         const data = JSON.parse(event.data);
 
-        if (!orderBookData && Array.isArray(data) && Array.isArray(data[1])) {
+        if (!Array.isArray(data) || !Array.isArray(data[1])) {
+          dispatch(resetOrderBookData());
+        } else if (!orderBookData) {
           dispatch(receiveOrderBookData(data));
-        }
-
-        if (orderBookData) {
+        } else {
           dispatch(updateOrderBookData(data));
         }
       };

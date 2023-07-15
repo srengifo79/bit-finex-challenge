@@ -15,26 +15,24 @@ function updateOrderBookData(orderBookData, updateFields) {
   );
 
   if (count > 0) {
-    // Find the existing subarray with the matching price
-    const existingSubarray = rows.find(
-      ([existingPrice]) => existingPrice === price
-    );
+    // Find the existing row with the matching price
+    const existingRow = rows.find(([existingPrice]) => existingPrice === price);
 
-    if (existingSubarray) {
-      // Update the existing subarray
-      existingSubarray[1] = count;
+    if (existingRow) {
+      // Update the existing row
+      existingRow[1] = count;
 
       if (amount > 0) {
-        existingSubarray[2] = amount; // Update asks
+        existingRow[2] = amount; // Update asks
       } else if (amount < 0) {
-        existingSubarray[2] = amount; // Update bids
+        existingRow[2] = amount; // Update bids
       }
     } else {
-      // Add a new subarray
+      // Add a new row
       rows.push([price, count, amount]);
     }
   } else {
-    // Remove the subarray with matching price
+    // Remove the row with matching price
     const index = rows.findIndex(([existingPrice]) => existingPrice === price);
 
     if (index !== -1) {
@@ -60,6 +58,11 @@ const orderBookSocketReducer = (state = initialState, action) => {
       return {
         ...state,
         orderBookData: updateOrderBookData(state.orderBookData, action.payload),
+      };
+    case 'RESET_ORDER_BOOK_DATA':
+      return {
+        ...state,
+        orderBookData: null,
       };
     default:
       return state;
