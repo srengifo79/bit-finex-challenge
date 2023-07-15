@@ -1,38 +1,65 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
+  addPrecision,
   receiveOrderBookData,
+  reducePrecision,
   resetOrderBookData,
   updateOrderBookData,
 } from '../../redux/actions/orderBook';
+import {
+  orderBookDataSelector,
+  precisionSelector,
+} from '../../redux/selectors';
 
 function useOrderBookSocket() {
   const [socket, setSocket] = useState(null);
 
   const dispatch = useDispatch();
 
-  const orderBookData = useSelector((state) => state.orderBook.orderBookData);
+  const orderBookData = useSelector(orderBookDataSelector);
+  const precision = useSelector(precisionSelector);
+
+  const subscribe = useCallback(() => {
+    if (socket) {
+      const msg = JSON.stringify({
+        event: 'subscribe',
+        channel: 'book',
+        symbol: 'tBTCUSD',
+        prec: `P${precision}`,
+      });
+
+      socket.send(msg);
+    }
+  }, [precision, socket]);
+
+  const unsubscribe = () => {
+    if (socket && orderBookData) {
+      const msg = JSON.stringify({
+        event: 'unsubscribe',
+        chanId: orderBookData[0],
+      });
+
+      socket.send(msg);
+    }
+  };
 
   useEffect(() => {
-    // const socket = new WebSocket('wss://api-pub.bitfinex.com/ws/2');
-
     if (socket) {
       socket.onopen = () => {
         console.log('WebSocket connection established.');
 
-        const msg = JSON.stringify({
-          event: 'subscribe',
-          channel: 'book',
-          symbol: 'tBTCUSD',
-        });
-
-        socket.send(msg);
+        subscribe();
       };
 
       socket.onmessage = (event) => {
         console.log('Received data:', event.data);
 
         const data = JSON.parse(event.data);
+
+        if (data.event === 'unsubscribed') {
+          subscribe();
+        }
 
         if (!Array.isArray(data)) {
           return dispatch(resetOrderBookData());
@@ -53,7 +80,7 @@ function useOrderBookSocket() {
         console.log('WebSocket connection closed.');
       };
     }
-  }, [dispatch, orderBookData, socket]);
+  }, [dispatch, orderBookData, precision, socket, subscribe]);
 
   useEffect(() => {
     return () => {
@@ -64,25 +91,54 @@ function useOrderBookSocket() {
     };
   }, [socket]);
 
-  const handleConnect = () => {
+  const initConnection = () => {
+    const newSocket = new WebSocket('wss://api-pub.bitfinex.com/ws/2');
+    setSocket(newSocket);
+  };
+
+  const closeConnection = () => {
     if (socket) {
       socket.close();
       setSocket(null);
-    } else {
-      const newSocket = new WebSocket('wss://api-pub.bitfinex.com/ws/2');
-      setSocket(newSocket);
     }
+  };
+
+  const handleConnect = () => {
+    if (socket) {
+      closeConnection();
+    } else {
+      initConnection();
+    }
+  };
+
+  const handleAddPrecision = () => {
+    unsubscribe();
+    dispatch(addPrecision());
+  };
+
+  const handleReducePrecision = () => {
+    unsubscribe();
+    dispatch(reducePrecision());
   };
 
   return {
     socket,
     setSocket,
     handleConnect,
+    precision,
+    handleAddPrecision,
+    handleReducePrecision,
   };
 }
 
 export function OrderBook() {
-  const { socket, handleConnect } = useOrderBookSocket();
+  const {
+    socket,
+    handleConnect,
+    precision,
+    handleAddPrecision,
+    handleReducePrecision,
+  } = useOrderBookSocket();
 
   const orderBookData = useSelector((state) => state.orderBook.orderBookData);
   const orderBookDataBuy = orderBookData?.[1].slice(0, 25) ?? [];
@@ -90,47 +146,57 @@ export function OrderBook() {
 
   return (
     <>
-      <div style={{ display: 'flex', columnGap: '100px' }}>
-        <div>
-          <div style={{ display: 'flex', columnGap: '50px' }}>
-            <span>Count</span>
-            <span>Amount</span>
-            <span>Price</span>
-          </div>
-          {orderBookDataBuy.map((row) => {
-            const [price, count, amount] = row;
-
-            return (
-              <div key={price} style={{ display: 'flex', columnGap: '50px' }}>
-                <span>{count}</span>
-                <span>{amount}</span>
-                <span>{price}</span>
-              </div>
-            );
-          })}
-        </div>
-        <div>
-          <div style={{ display: 'flex', columnGap: '50px' }}>
-            <span>Price</span>
-            <span>Amount</span>
-            <span>Count</span>
-          </div>
-          {orderBookDataSell.map((row) => {
-            const [price, count, amount] = row;
-
-            return (
-              <div key={price} style={{ display: 'flex', columnGap: '50px' }}>
-                <span>{price}</span>
-                <span>{amount}</span>
-                <span>{count}</span>
-              </div>
-            );
-          })}
-        </div>
+      <div>
+        <button onClick={handleAddPrecision} disabled={precision > 4}>
+          +0
+        </button>
+        <button onClick={handleReducePrecision} disabled={precision < 1}>
+          -0
+        </button>
       </div>
-      <button onClick={handleConnect}>
-        {socket ? 'Disconnect' : 'Connect'}
-      </button>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', columnGap: '100px' }}>
+          <div>
+            <div style={{ display: 'flex', columnGap: '50px' }}>
+              <span>Count</span>
+              <span>Amount</span>
+              <span>Price</span>
+            </div>
+            {orderBookDataBuy.map((row) => {
+              const [price, count, amount] = row;
+
+              return (
+                <div key={price} style={{ display: 'flex', columnGap: '50px' }}>
+                  <span>{count}</span>
+                  <span>{amount}</span>
+                  <span>{price}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div>
+            <div style={{ display: 'flex', columnGap: '50px' }}>
+              <span>Price</span>
+              <span>Amount</span>
+              <span>Count</span>
+            </div>
+            {orderBookDataSell.map((row) => {
+              const [price, count, amount] = row;
+
+              return (
+                <div key={price} style={{ display: 'flex', columnGap: '50px' }}>
+                  <span>{price}</span>
+                  <span>{amount}</span>
+                  <span>{count}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <button onClick={handleConnect} style={{ width: 'fit-content' }}>
+          {socket ? 'Disconnect' : 'Connect'}
+        </button>
+      </div>
     </>
   );
 }

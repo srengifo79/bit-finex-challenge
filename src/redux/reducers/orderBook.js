@@ -1,5 +1,6 @@
 const initialState = {
   orderBookData: null,
+  precision: 0,
 };
 
 function updateOrderBookData(orderBookData, updateFields) {
@@ -63,6 +64,16 @@ const orderBookSocketReducer = (state = initialState, action) => {
       return {
         ...state,
         orderBookData: null,
+      };
+    case 'ADD_PRECISION':
+      return {
+        ...state,
+        precision: state.precision + 1,
+      };
+    case 'REDUCE_PRECISION':
+      return {
+        ...state,
+        precision: state.precision - 1,
       };
     default:
       return state;
