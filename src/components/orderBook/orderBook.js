@@ -11,6 +11,7 @@ import {
   orderBookDataSelector,
   precisionSelector,
 } from '../../redux/selectors';
+import './orderBook.css';
 
 function useOrderBookSocket() {
   const [socket, setSocket] = useState(null);
@@ -157,34 +158,34 @@ export function OrderBook() {
         </button>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', columnGap: '100px' }}>
+        <div style={{ display: 'flex', columnGap: '2px' }}>
           <div>
-            <div style={{ display: 'flex', columnGap: '50px' }}>
-              <span>Count</span>
-              <span>Amount</span>
-              <span>Total</span>
-              <span>Price</span>
+            <div style={{ display: 'flex', columnGap: '30px' }}>
+              <span className="count">COUNT</span>
+              <span className="amount">AMOUNT</span>
+              <span className="total">TOTAL</span>
+              <span className="price">PRICE</span>
             </div>
             {orderBookDataBuy.map((row, index) => {
               const [price, count, amount] = row;
               totalBuy = totalBuy + amount;
 
               return (
-                <div key={price} style={{ display: 'flex', columnGap: '50px' }}>
-                  <span>{count}</span>
-                  <span>{amount}</span>
-                  <span>{totalBuy}</span>
-                  <span>{price}</span>
+                <div key={price} style={{ display: 'flex', columnGap: '30px' }}>
+                  <span className="count">{count}</span>
+                  <span className="amount">{amount}</span>
+                  <span className="total">{totalBuy}</span>
+                  <span className="price">{price}</span>
                 </div>
               );
             })}
           </div>
           <div>
-            <div style={{ display: 'flex', columnGap: '50px' }}>
-              <span>Price</span>
-              <span>Total</span>
-              <span>Amount</span>
-              <span>Count</span>
+            <div style={{ display: 'flex', columnGap: '30px' }}>
+              <span className="price">PRICE</span>
+              <span className="total">TOTAL</span>
+              <span className="amount">AMOUNT</span>
+              <span className="count">COUNT</span>
             </div>
             {orderBookDataSell.map((row) => {
               const [price, count, amount] = row;
@@ -193,11 +194,11 @@ export function OrderBook() {
               totalAsk = totalAsk + absAmount;
 
               return (
-                <div key={price} style={{ display: 'flex', columnGap: '50px' }}>
-                  <span>{price}</span>
-                  <span>{totalAsk}</span>
-                  <span>{absAmount}</span>
-                  <span>{count}</span>
+                <div key={price} style={{ display: 'flex', columnGap: '30px' }}>
+                  <span className="price">{price}</span>
+                  <span className="total">{totalAsk}</span>
+                  <span className="amount">{absAmount}</span>
+                  <span className="count">{count}</span>
                 </div>
               );
             })}

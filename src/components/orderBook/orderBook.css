@@ -1,0 +1,18 @@
+.count {
+  min-width: 50px;
+  max-width: 50px;
+}
+.amount {
+  min-width: 120px;
+  max-width: 120px;
+  text-align: initial;
+}
+.total {
+  min-width: 150px;
+  max-width: 150px;
+  text-align: initial;
+}
+.price {
+  flex: 1;
+  text-align: initial;
+}
