@@ -6,11 +6,8 @@ import {
   reducePrecision,
   resetOrderBookData,
   updateOrderBookData,
-} from '../../redux/actions/orderBook';
-import {
-  orderBookDataSelector,
-  precisionSelector,
-} from '../../redux/selectors';
+} from '../redux/actions/orderBook';
+import { orderBookDataSelector, precisionSelector } from '../redux/selectors';
 
 function useOrderBookSocket() {
   const [socket, setSocket] = useState(null);
